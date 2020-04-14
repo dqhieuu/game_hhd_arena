@@ -1,0 +1,20 @@
+{
+    "configurations": [
+        {
+            "name": "Win32",
+            "includePath": [
+                "${workspaceFolder}/**",
+                "${workspaceFolder}/libs/SDL2-2.0.12/i686-w64-mingw32/lib",
+                "${workspaceFolder}/libs/SDL2_mixer-2.0.4/i686-w64-mingw32/lib",
+                "${workspaceFolder}/libs/SDL2_image-2.0.5/i686-w64-mingw32/lib"
+            ],
+            "defines": [
+                "_DEBUG",
+                "UNICODE",
+                "_UNICODE"
+            ],
+            "intelliSenseMode": "msvc-x64"
+        }
+    ],
+    "version": 4
+}

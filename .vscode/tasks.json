@@ -1,0 +1,88 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "type": "shell",
+            "label": "g++ build debug",
+            "command": "g++",
+            "args": [
+                "-g",
+                "-pedantic",
+                "-Wall",
+                "-Wextra",
+                "-std=c++11",
+                "${workspaceFolder}\\src\\main.cpp",
+                "-I",
+                "${workspaceFolder}\\libs\\SDL2-2.0.12\\i686-w64-mingw32\\include\\SDL2",
+                "-I",
+                "${workspaceFolder}\\libs\\SDL2_image-2.0.5\\i686-w64-mingw32\\include\\SDL2",
+                "-I",
+                "${workspaceFolder}\\libs\\SDL2_mixer-2.0.4\\i686-w64-mingw32\\include\\SDL2",
+                "-L",
+                "${workspaceFolder}\\libs\\SDL2-2.0.12\\i686-w64-mingw32\\lib",
+                "-L",
+                "${workspaceFolder}\\libs\\SDL2_image-2.0.5\\i686-w64-mingw32\\lib",
+                "-L",
+                "${workspaceFolder}\\libs\\SDL2_mixer-2.0.4\\i686-w64-mingw32\\lib",
+                "-lmingw32",
+                "-lSDL2main",
+                "-lSDL2",
+                "-lSDL2_image",
+                "-lSDL2_mixer",
+                "-o",
+                "${workspaceFolder}\\bin\\debug\\HHD_Arena.exe"
+            ],
+            "problemMatcher": [
+                "$gcc"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
+        },
+        {
+            "label": "Run executable",
+            "type": "shell",
+            "command": "${workspaceFolder}\\bin\\debug\\HHD_Arena.exe",
+            "group": {
+                "kind": "test",
+                "isDefault": true
+            },
+            "options": {
+                "cwd": "${workspaceFolder}\\bin\\debug"
+            },
+        },
+        {
+            "type": "shell",
+            "label": "g++ build release",
+            "command": "g++",
+            "args": [
+                "-std=c++11",
+                "${workspaceFolder}\\src\\main.cpp",
+                "-I",
+                "${workspaceFolder}\\libs\\SDL2-2.0.12\\i686-w64-mingw32\\include\\SDL2",
+                "-I",
+                "${workspaceFolder}\\libs\\SDL2_image-2.0.5\\i686-w64-mingw32\\include\\SDL2",
+                "-I",
+                "${workspaceFolder}\\libs\\SDL2_mixer-2.0.4\\i686-w64-mingw32\\include\\SDL2",
+                "-L",
+                "${workspaceFolder}\\libs\\SDL2-2.0.12\\i686-w64-mingw32\\lib",
+                "-L",
+                "${workspaceFolder}\\libs\\SDL2_image-2.0.5\\i686-w64-mingw32\\lib",
+                "-L",
+                "${workspaceFolder}\\libs\\SDL2_mixer-2.0.4\\i686-w64-mingw32\\lib",
+                "-lmingw32",
+                "-lSDL2main",
+                "-lSDL2",
+                "-lSDL2_image",
+                "-lSDL2_mixer",
+                "'-Wl,-subsystem,windows'",
+                "-o",
+                "${workspaceFolder}\\bin\\release\\HHD_Arena.exe"
+            ],
+            "problemMatcher": [
+                "$gcc"
+            ]
+        },
+    ]
+}
