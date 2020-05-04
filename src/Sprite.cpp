@@ -17,6 +17,7 @@ Sprite::Sprite(Texture* texture, int x, int y, int w, int h, bool defaultHitbox)
     if(defaultHitbox == true) addHitbox(0, 0, w, h);
 }
 
+
 SDL_Rect* Sprite::getClip() {
     return &mClip;
 }

@@ -20,7 +20,6 @@ class Texture {
     void attachCamera(SDL_Rect * camera) {
         if(camera) mCamera = camera;
     };
-    bool hasClick();
 
    private:
     SDL_Texture *mTexture;

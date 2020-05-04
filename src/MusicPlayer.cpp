@@ -10,6 +10,7 @@
 MusicPlayer::MusicPlayer() {
     mIsPlaying = false;
     mMusic = nullptr;
+    mPlayerVolume = 100;
 }
 void MusicPlayer::free() {
     if (mMusic != nullptr) {
@@ -27,11 +28,18 @@ void MusicPlayer::load(std::string path) {
 
     mMusic = Mix_LoadMUS(path.c_str());
     if (mMusic == nullptr)
-        std::cout << "Error: Music not found, Mix_LoadMUS: " << Mix_GetError() << "\n";
+        std::cout << "Error: Loading music " << path << " failed, Mix_LoadMUS: " << Mix_GetError() << "\n";
 }
+
 void MusicPlayer::setVolume(int volume) {
-    Mix_VolumeMusic(volume);
+    if(0 <= volume && volume <= 100)
+    mPlayerVolume = volume;
 }
+
+void MusicPlayer::setInternalVolume(int volume) {
+    Mix_VolumeMusic(volume*mPlayerVolume/100);
+}
+
 void MusicPlayer::play(int fadeInTicks) {
     if (mMusic != nullptr) {
         if (fadeInTicks != 0) {

@@ -5,9 +5,11 @@
 
 enum StateType {
     NULL_STATE,
+    INTRO,
     MAIN_MENU,
-    STAGE_1,
     SETTINGS,
+    STAGE_1,
+    CREDITS,
     GAME_EXIT
 };
 
@@ -15,7 +17,7 @@ class GameState {
    public:
     virtual void handleEvents(SDL_Event* event) = 0;
     virtual void handleLogic(double timeStep) = 0;
-    virtual void render() = 0;
+    virtual void handleGraphics() = 0;
     virtual ~GameState(){};
 };
 

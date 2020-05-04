@@ -3,6 +3,7 @@
 
 #include <string>
 #include "GameState.h"
+#include "Settings.h"
 
 class Game {
    public:
@@ -10,8 +11,10 @@ class Game {
     ~Game();
     bool initialize(std::string gameTitle, int width, int height);
     void update(double timeStep);
-    StateType mCurrentStateId;
     void setState(StateType state);
+    Settings mGameSettings;
+    StateType mCurrentStateId;
+
 
    private:
     void checkState();

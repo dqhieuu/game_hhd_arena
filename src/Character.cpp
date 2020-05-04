@@ -8,12 +8,15 @@
 #include <string>
 #include <vector>
 
+#include "Locator.h"
+#include "SoundEffect.h"
 #include "Sprite.h"
 #include "Texture.h"
-#include "SoundEffect.h"
-#include "Locator.h"
+#include "CharacterState.h"
+#include "JumpingState.h"
+#include "StandingState.h"
 
-Character::Character(int x, int y) {
+Character::Character(Game* gameInstance, int x, int y) {
     mVelX = mVelY = 0;
     mMoveDirectionX = mMoveDirectionY = NONE;
     mFacingDirection = RIGHT;
@@ -27,6 +30,9 @@ Character::Character(int x, int y) {
     mStep = new SoundEffect("assets/se/wibu_dibo.wav");
     Locator::getSoundEffectPlayer()->loadSoundEffect(*mStep);
     mAccumulator = 0;
+    mJumpLeft = MAX_JUMP_COUNT;
+    gGameInstance = gameInstance;
+    mCurrentState = new StandingState();
 }
 
 int Character::getPosX() {
@@ -42,111 +48,69 @@ Sprite* Character::getSprite() {
 }
 
 void Character::handleEvent(SDL_Event* e) {
-    if (e->type == SDL_KEYDOWN && e->key.repeat == 0) {
-        if (e->key.keysym.scancode == SDL_SCANCODE_UP)
-            mMoveDirectionY = UP;
-        else if (e->key.keysym.scancode == SDL_SCANCODE_DOWN)
-            mMoveDirectionY = DOWN;
-        if (e->key.keysym.scancode == SDL_SCANCODE_LEFT) {
-            mMoveDirectionX = LEFT;
-            mFacingDirection = LEFT;
-        }
-        else if (e->key.keysym.scancode == SDL_SCANCODE_RIGHT) {
-            mMoveDirectionX = RIGHT;
-            mFacingDirection = RIGHT;
-        }
-    } else if (e->type == SDL_KEYUP && e->key.repeat == 0) {
-        const Uint8* state = SDL_GetKeyboardState(nullptr);
-        if (e->key.keysym.scancode == SDL_SCANCODE_UP || e->key.keysym.scancode == SDL_SCANCODE_DOWN) {
-            if (state[SDL_SCANCODE_UP])
-                mMoveDirectionY = UP;
-            else if (state[SDL_SCANCODE_DOWN])
-                mMoveDirectionY = DOWN;
-            else
-                mMoveDirectionY = NONE;
-        }
-
-        if (e->key.keysym.scancode == SDL_SCANCODE_LEFT || e->key.keysym.scancode == SDL_SCANCODE_RIGHT) {
-            if (state[SDL_SCANCODE_LEFT]) {
-                mMoveDirectionX = LEFT;
-                mFacingDirection = LEFT;
-            }
-            else if (state[SDL_SCANCODE_RIGHT]) {
-                mMoveDirectionX = RIGHT;
-                mFacingDirection = RIGHT;
-            }
-            else
-                mMoveDirectionX = NONE;
-        }
+    CharacterState* newState = mCurrentState->handleInput(*this, e);
+    if (newState != nullptr) {
+        delete mCurrentState;
+        mCurrentState = newState;
     }
 }
 
-void Character::move(double t) {
-    if (mMoveDirectionX == LEFT) {
-        if (mVelX > 0) {
-            mX += mVelX * t + -ACCELERATION * t * t;
-            mVelX += -2.0 * ACCELERATION * t;
-        } else {
-            mX += mVelX * t + -ACCELERATION * t * t / 2.0;
-            mVelX += -ACCELERATION * t;
-            if (mVelX <= -MAX_VEL_X) mVelX = -MAX_VEL_X;
-        }
-    } else if (mMoveDirectionX == RIGHT) {
-        if (mVelX < 0) {
-            mX += mVelX * t + ACCELERATION * t * t;
-            mVelX += 2.0 * ACCELERATION * t;
-        } else {
-            mX += mVelX * t + ACCELERATION * t * t / 2.0;
-            mVelX += ACCELERATION * t;
-            if (mVelX >= MAX_VEL_X) mVelX = MAX_VEL_X;
-        }
-    } else if (mMoveDirectionX == NONE && mVelX != 0) {
-        if (mVelX > 0) {
-            mX += mVelX * t + -ACCELERATION * t * t;
-            mVelX += -2.0 * ACCELERATION * t;
-            if (mVelX <= 0)
-                mVelX = 0;
-        } else {
-            mX += mVelX * t + ACCELERATION * t * t;
-            mVelX += 2.0 * ACCELERATION * t;
-            if (mVelX >= 0)
-                mVelX = 0;
-        }
+void Character::handleLogic(std::vector<SDL_Rect>* solidObjects, double timeStep) {
+    CharacterState* newState = mCurrentState->handleLogic(*this, solidObjects, timeStep);
+    if (newState != nullptr) {
+        delete mCurrentState;
+        mCurrentState = newState;
     }
-
-    if (mMoveDirectionY == UP) {
-        if (mVelY - ACCELERATION >= -MAX_VEL_X) mVelY -= ACCELERATION;
-    } else if (mMoveDirectionY == DOWN) {
-        if (mVelY + ACCELERATION <= MAX_VEL_X) mVelY += ACCELERATION;
-    } else if (mMoveDirectionY == NONE && mVelY != 0) {
-        if (mVelY > 0) {
-            if (mVelY <= 3.0 * ACCELERATION)
-                mVelY = 0;
-            else
-                mVelY -= 2.0 * ACCELERATION;
-        } else {
-            if (mVelY >= -3.0 * ACCELERATION)
-                mVelY = 0;
-            else
-                mVelY += 2.0 * ACCELERATION;
-        }
-    }
-    printf("vel (%f %f) pos (%f %f) ts (%f)\n", mVelX, mVelY, mX, mY, t);
 }
 
 void Character::handleGraphics() {
+    mCurrentState->handleGraphics(*this);
     SDL_RendererFlip flip = SDL_FLIP_NONE;
     if (mFacingDirection == LEFT) flip = SDL_FLIP_HORIZONTAL;
-    if (mAccumulator >= 90) mAccumulator=0;
+    if (mAccumulator >= 100000) mAccumulator = 0;
     if (mVelX != 0) {
-        mCurrentSprite = mMoveSprite[mAccumulator/15%3];
-        if(mAccumulator%30 == 0) Locator::getSoundEffectPlayer()->play(mStep->id, mStep->id);
-    } else mCurrentSprite= mMoveSprite[0];
+        mCurrentSprite = mMoveSprite[mAccumulator / 15 % 3];
+        if (mAccumulator % 30 == 0) Locator::getSoundEffectPlayer()->play(mStep->id, mStep->id);
+    } else
+        mCurrentSprite = mMoveSprite[0];
 
-    Locator::getRenderer()->renderTexture(getSprite()->getTexture(), getPosX(), getPosY(), getSprite()->getClip()->w, getSprite()->getClip()->h, getSprite()->getClip(),PIN_LEFT,PIN_BOTTOM,SIZE_IN_PIXELS,SIZE_IN_PIXELS,flip);
+    Locator::getRenderer()->renderTexture(getSprite()->getTexture(), getPosX(), getPosY(), getSprite()->getClip()->w, getSprite()->getClip()->h, getSprite()->getClip(), PIN_LEFT, PIN_TOP, SIZE_IN_PIXELS, SIZE_IN_PIXELS, flip);
     ++mAccumulator;
 }
 
-void Character::update(double timeStep) {
-    move(timeStep);
+void Character::move(double t) {
+    if (mMoveDirectionX == LEFT || mMoveDirectionX == RIGHT) {
+        double normalizedAccelaration = ACCELERATION;
+        double normalizedVelX = mVelX;
+        double normalizedMaxVelX = MAX_VEL_X;
+
+        if (mMoveDirectionX == LEFT) {
+            normalizedAccelaration = -normalizedAccelaration;
+            normalizedVelX = -normalizedVelX;
+            normalizedMaxVelX = -normalizedMaxVelX;
+        }
+        if (normalizedVelX < 0)
+            normalizedAccelaration *= 2.0;
+        if (normalizedVelX >= MAX_VEL_X) {
+            mX += mVelX * t;
+            mVelX = normalizedMaxVelX;
+        } else {
+            mX += mVelX * t + normalizedAccelaration * t * t / 2.0;
+            mVelX += normalizedAccelaration * t;
+            if (normalizedVelX >= MAX_VEL_X) mVelX = normalizedMaxVelX;
+        }
+    } else if (mMoveDirectionX == NONE && mVelX != 0) {
+        double normalizedAccelaration = ACCELERATION;
+        double normalizedVelX = mVelX;
+
+        if (mVelX > 0) {
+            normalizedAccelaration = -normalizedAccelaration;
+            normalizedVelX = -normalizedVelX;
+        }
+        normalizedAccelaration *= 1.5;
+        mX += mVelX * t + normalizedAccelaration * t * t / 2.0;
+        mVelX += normalizedAccelaration * t;
+        if (normalizedVelX + normalizedAccelaration * t >= 0)
+            mVelX = 0;
+    }
 }

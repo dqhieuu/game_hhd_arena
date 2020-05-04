@@ -7,6 +7,7 @@
 #include "Game.h"
 #include "Locator.h"
 #include "GameState.h"
+#include <vector>
 
 class Stage1 : public GameState {
    public:
@@ -14,9 +15,12 @@ class Stage1 : public GameState {
     ~Stage1();
     void handleEvents(SDL_Event* event);
     void handleLogic(double timeStep);
-    void render();
+    void handleGraphics();
    private:
     IRenderer* gRenderer = Locator::getRenderer();
+    std::vector<SDL_Rect> mSolidObjects;
+    std::vector<Sprite> mHurtObjects;
+
     Texture* mBackground;
     Texture* mPlatform;
     Character* mPlayer;

@@ -9,13 +9,13 @@
 class SoundEffectPlayer : public ISoundEffectPlayer {
    public:
     SoundEffectPlayer();
-    virtual ~SoundEffectPlayer();
+    virtual void setVolume(int volume);
     virtual void loadSoundEffect(SoundEffect& effect);
     virtual void play(int id, int channel = -1, int loops = 0, int time = -1);
 
    private:
     int getUniqueChannelId();
-
+    int mPlayerVolume;
     int mChannelIndex;
     std::unordered_map<int, Mix_Chunk*> storage;
 };

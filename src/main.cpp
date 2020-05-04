@@ -12,16 +12,9 @@
 #include <utility>
 #include <vector>
 
-#include "Character.h"
 #include "Game.h"
 #include "GameState.h"
 #include "Locator.h"
-#include "MusicPlayer.h"
-#include "Renderer.h"
-#include "SoundEffect.h"
-#include "SoundEffectPlayer.h"
-#include "Sprite.h"
-#include "Texture.h"
 #include "Timer.h"
 
 
@@ -44,30 +37,33 @@ int main(int /*argc*/, char** /*args*/) {
     Timer fpsCounter;
     int countedFrames = 0;
     fpsCounter.start();
-
+    stepTimer.start();
     // Main game loop
-
+    double timeStep;
     while (myGame.mCurrentStateId != GAME_EXIT) {
         // Get fps every 500ms
-        if (fpsCounter.getTicks() > 500) {
+        if (fpsCounter.getTicks() >= 500) {
             double avgFPS = (double)countedFrames / fpsCounter.getTicks() * 1000;
+            std:: cout << "FPS: " << avgFPS << "\n";
             fpsCounter.start();  // Reset fps counter
             countedFrames = 0;
         } else
             ++countedFrames;
 
-        //Get timestep and reset
-        int frameTicks = stepTimer.getTicks();
-        double timeStep = stepTimer.getTicks() / 1000.0;
+        //Get previous time step and reset step timer
+        timeStep = stepTimer.getTicks() / 1000.0;
         stepTimer.start();
+
         // Update the main game
         myGame.update(timeStep);
 
-        // Delay if game run too fast
-        if (frameTicks < TICKS_PER_FRAME) {
-            SDL_Delay(TICKS_PER_FRAME - frameTicks);
-        }
+        // Get passed time step
+        int tickPassed = stepTimer.getTicks();
 
+        // Delay if game run too fast
+        if (tickPassed < TICKS_PER_FRAME) {
+            SDL_Delay(TICKS_PER_FRAME - tickPassed);
+        }
     }
     return 0;
 }

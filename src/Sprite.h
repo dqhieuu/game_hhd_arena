@@ -7,7 +7,6 @@
 class Sprite {
    public:
     Sprite(Texture* texture, int x, int y, int w, int h, bool defaultHitBox=false);
-    ~Sprite();
     Texture* getTexture();
     SDL_Rect* getClip();
     void addHitbox(int x, int y, int w, int h);

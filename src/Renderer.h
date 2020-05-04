@@ -17,6 +17,9 @@ class Renderer : public IRenderer {
                                PositioningMode xMode = PIN_LEFT, PositioningMode yMode = PIN_TOP,
                                SizeMode widthMode = SIZE_IN_PIXELS, SizeMode heightMode = SIZE_IN_PIXELS,
                                SDL_RendererFlip flip = SDL_FLIP_NONE, double angle = 0.0, SDL_Point* center = nullptr);
+    virtual SDL_Rect* getAbsolutePosition(Texture* texture, int x, int y, int width=-1, int height=-1,
+                               PositioningMode xMode = PIN_LEFT, PositioningMode yMode = PIN_TOP,
+                               SizeMode widthMode = SIZE_IN_PIXELS, SizeMode heightMode = SIZE_IN_PIXELS);
     virtual void setTextureBlendMode(Texture* texture, SDL_BlendMode blending);
     virtual void setTextureColor(Texture* texture, Uint8 red, Uint8 green, Uint8 blue);
     virtual void setTextureTransparency(Texture* texture, Uint8 opacity);

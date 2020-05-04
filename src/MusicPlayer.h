@@ -12,9 +12,11 @@ class MusicPlayer : public IMusicPlayer {
     virtual void free();
     virtual void load(std::string path);
     virtual void setVolume(int volume);
+    virtual void setInternalVolume(int volume);
     virtual void play(int fadeInTicks = 0);
     virtual void stop(int fadeOutTicks = 0);
    private:
+    int mPlayerVolume;
     bool mIsPlaying;
     Mix_Music* mMusic;
 };

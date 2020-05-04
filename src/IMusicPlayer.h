@@ -9,5 +9,6 @@ class IMusicPlayer {
     virtual void play(int fadeInTicks = 0) = 0;
     virtual void stop(int fadeOutTicks = 0) = 0;
     virtual void setVolume(int volume) = 0;
+    virtual void setInternalVolume(int volume) = 0;
 };
 #endif

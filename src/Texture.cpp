@@ -18,34 +18,22 @@ Texture::Texture(std::string path) {
     loadFromFile(path);
 }
 
+Texture::Texture(TTF_Font *font, std::string textureText, SDL_Color textColor) {
+    loadFromRenderedText(font, textureText, textColor);
+}
+
 Texture::~Texture() {
-    //Deallocate
-    free();
+    if (mTexture != nullptr) {
+        SDL_DestroyTexture(mTexture);
+        mTexture = nullptr;
+        mWidth = 0;
+        mHeight = 0;
+    }
 }
 
-
-bool Texture::hasClick() {
-    //Check if mouse is in button
-    bool inside = true;
-    if (!isRendered) return false;
-    int x, y;
-    SDL_GetMouseState(&x, &y);
-    std::cout << x << " " << y << "\n";
-    //Mouse is left of the button
-  //  if (mX < x || mX > x + mWidth || mY < y || mY > y + mHeight) {
-   //     inside = false;
-  //  }
-
-    //Mouse is outside button
-    return inside;
-}
 
 bool Texture::loadFromFile(std::string path) {
-    //Get rid of preexisting texture
-    free();
-    //The final texture
     SDL_Texture* newTexture = NULL;
-
 
     //Load image at specified path
     SDL_Surface* loadedSurface = IMG_Load(path.c_str());
@@ -71,10 +59,6 @@ bool Texture::loadFromFile(std::string path) {
 }
 
 bool Texture::loadFromRenderedText(TTF_Font* font, std::string textureText, SDL_Color textColor) {
-    //Get rid of preexisting texture
-    free();
-
-
     SDL_Surface* textSurface = TTF_RenderUTF8_Solid(font, textureText.c_str(), textColor);
     if (textSurface == NULL) {
         printf("Unable to render text surface! SDL_ttf Error: %s\n", TTF_GetError());
@@ -97,12 +81,3 @@ bool Texture::loadFromRenderedText(TTF_Font* font, std::string textureText, SDL_
     return mTexture != NULL;
 }
 
-void Texture::free() {
-    //Free texture if it exists
-    if (mTexture != nullptr) {
-        SDL_DestroyTexture(mTexture);
-        mTexture = nullptr;
-        mWidth = 0;
-        mHeight = 0;
-    }
-}
