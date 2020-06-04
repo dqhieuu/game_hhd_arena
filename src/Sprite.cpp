@@ -8,13 +8,26 @@
 #include "Texture.h"
 #include "Sprite.h"
 
+
+Sprite::Sprite() {
+    mTexture = nullptr;
+    mClip.x = 0;
+    mClip.y = 0;
+    mClip.w = 0;
+    mClip.h = 0;
+}
+
 Sprite::Sprite(Texture* texture, int x, int y, int w, int h, bool defaultHitbox) {
+    setSprite(texture, x, y, w, h, defaultHitbox);
+}
+
+void Sprite::setSprite(Texture* texture, int x, int y, int w, int h, bool defaultHitbox) {
     mTexture = texture;
     mClip.x = x;
     mClip.y = y;
     mClip.w = w;
     mClip.h = h;
-    if(defaultHitbox == true) addHitbox(0, 0, w, h);
+    if(defaultHitbox == true) addProportionalHitbox(0, 0, 1.0, 1.0);
 }
 
 
@@ -26,15 +39,16 @@ Texture* Sprite::getTexture() {
     return mTexture;
 }
 
-std::vector<SDL_Rect>* Sprite::getHitboxes() {
-    return &mHitboxes;
+std::vector<ProportionalRectangle>& Sprite::getProportionalHitboxes() {
+    return mProportionalHitboxes;
 }
 
-bool Sprite::hasHitboxes() const {
-    return (mHitboxes.size() > 0);
+Sprite& Sprite::addProportionalHitbox(double xScale, double yScale, double wScale, double hScale) {
+    mProportionalHitboxes.emplace_back(xScale, yScale, wScale, hScale);
+    return *this;
 }
 
-void Sprite::addHitbox(int x, int y, int w, int h) {
-    SDL_Rect newRect{x, y, w, h};
-    mHitboxes.push_back(newRect);
+Sprite& Sprite::addProportionalHurtbox(double xScale, double yScale, double wScale, double hScale) {
+    mProportionalHurtboxes.emplace_back(xScale, yScale, wScale, hScale);
+    return *this;
 }

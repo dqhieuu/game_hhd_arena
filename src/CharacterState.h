@@ -4,6 +4,7 @@
 
 
 #include "Locator.h"
+#include "Timer.h"
 
 class Character;
 
@@ -13,6 +14,7 @@ class CharacterState {
     virtual CharacterState* handleInput(Character& character, SDL_Event* e) = 0;
     virtual CharacterState* handleLogic(Character& character, std::vector<SDL_Rect>* solidObjects, double t) = 0;
     virtual void handleGraphics(Character& character) = 0;
+    Timer mCharStateTimer;
 };
 
 #endif

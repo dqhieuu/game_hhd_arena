@@ -1,22 +1,29 @@
+#include "Game.h"
+
 #include <SDL.h>
 #include <SDL_image.h>
 #include <SDL_mixer.h>
 #include <SDL_ttf.h>
-#include <iostream>
+
 #include <cereal/archives/json.hpp>
 #include <fstream>
+#include <iostream>
+#include <string>
 
-#include "Game.h"
+#include "CharacterSelectionScreen.h"
 #include "Intro.h"
-#include "MainMenu.h"
-#include "Stage1.h"
-#include "Settings.h"
 #include "Locator.h"
-
+#include "MainMenu.h"
+#include "Settings.h"
+#include "Stage1.h"
+#include "StageResult.h"
 
 Game::Game() {
+    mWidth = 0;
+    mHeight = 0;
     mGameWindow = nullptr;
     mGameRenderer = nullptr;
+    mController = nullptr;
     mCurrentState = nullptr;
     mCurrentStateId = NULL_STATE;
     mNextStateId = NULL_STATE;
@@ -25,6 +32,7 @@ Game::Game() {
 Game::~Game() {
     delete mGameEvents;
     delete mCurrentState;
+    SDL_GameControllerClose(mController);
     Mix_CloseAudio();
     Mix_Quit();
     IMG_Quit();
@@ -35,9 +43,9 @@ Game::~Game() {
 }
 
 bool Game::initialize(std::string gameTitle, int width, int height) {
-    { // Read game settings by deserialization (encapsulation to ensure cereal RAII)
+    {  // Read game settings by deserialization (encapsulation to ensure cereal's RAII)
         std::ifstream readSettingsFile("settings.dat");
-        if(readSettingsFile.fail()) {
+        if (!readSettingsFile) {
             std::ofstream writeSettingsFile("settings.dat");
             cereal::JSONOutputArchive writeArchive(writeSettingsFile);
             writeArchive(CEREAL_NVP(mGameSettings));
@@ -60,6 +68,10 @@ bool Game::initialize(std::string gameTitle, int width, int height) {
         std::cout << "Error: SDL_CreateWindow: " << SDL_GetError() << "\n";
         return false;
     }
+
+    // Set width, height
+    mWidth = width;
+    mHeight = height;
 
     // Inialize renderer attached to the main game window w/ vsync
     mGameRenderer = SDL_CreateRenderer(mGameWindow, -1, SDL_RENDERER_ACCELERATED);
@@ -93,6 +105,7 @@ bool Game::initialize(std::string gameTitle, int width, int height) {
         std::cout << "Error: Mix_OpenAudio: " << Mix_GetError() << "\n";
         return false;
     }
+    Mix_AllocateChannels(200);
 
     // Set music player volume based on the attribute setting
     Locator::getMusicPlayer()->setVolume(mGameSettings.musicVolume);
@@ -105,13 +118,28 @@ bool Game::initialize(std::string gameTitle, int width, int height) {
         std::cout << "Error: TTF_Init: " << TTF_GetError() << "\n";
         return false;
     }
-    
+
     // Disable cursor
     SDL_ShowCursor(SDL_DISABLE);
 
     // Set fullscreen based on the attribute setting
-    if(mGameSettings.isFullScreen == true) {
+    if (mGameSettings.isFullScreen == true) {
         SDL_SetWindowFullscreen(mGameWindow, SDL_WINDOW_FULLSCREEN);
+    }
+
+    // Initialize controller
+    if (SDL_NumJoysticks() < 1) {
+        std::cout << "Warning: No controller connected!\n";
+    } else {
+        mController = SDL_GameControllerOpen(0);
+        if (mController == nullptr) {
+            std::cout << "Warning: Unable to open game controller! SDL Error: "<< SDL_GetError() << "\n";
+        } else {
+            mControllerHaptic = SDL_HapticOpen(0);
+            if(mControllerHaptic != nullptr) {
+                SDL_HapticRumbleInit(mControllerHaptic);
+            }
+        }
     }
 
     // Set first game state
@@ -119,7 +147,6 @@ bool Game::initialize(std::string gameTitle, int width, int height) {
 
     return true;
 }
-
 
 void Game::update(double timeStep) {
     checkState();
@@ -130,28 +157,35 @@ void Game::update(double timeStep) {
     SDL_RenderPresent(mGameRenderer);
 }
 
-void Game::setState(StateType state) {
+void Game::setState(StateType state, std::string flags) {
     mNextStateId = state;
+    mNextStateFlags = flags;
 }
 
 void Game::checkState() {
     if (mNextStateId != NULL_STATE) {
-        if(mNextStateId != GAME_EXIT)
+        if (mNextStateId != GAME_EXIT)
             delete mCurrentState;
         mCurrentStateId = mNextStateId;
         switch (mCurrentStateId) {
             case INTRO:
                 mCurrentState = new Intro(this);
-            break;
+                break;
             case MAIN_MENU:
                 mCurrentState = new MainMenu(this);
                 break;
-            case STAGE_1:
-                mCurrentState = new Stage1(this);
+            case CHARACTER_SELECTION:
+                mCurrentState = new CharacterSelectionScreen(this);
                 break;
+            case STAGE_1:
+                mCurrentState = new Stage1(this, mWidth, mHeight, mNextStateFlags);
+                break;
+            case STAGE_RESULT:
+                mCurrentState = new StageResult(this, mNextStateFlags);
             default:
                 break;
         }
-         mNextStateId = NULL_STATE;
+        mNextStateId = NULL_STATE;
+        mNextStateFlags = "";
     }
 }

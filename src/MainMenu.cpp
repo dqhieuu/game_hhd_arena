@@ -6,9 +6,9 @@
 #include "Renderer.h"
 
 MainMenu::MainMenu(Game* gameInstance) {
-    accumulator = 0;
-    mChoosingOption = 0;
     gCurrentGame = gameInstance;
+    mChoosingOption = 0;
+    mGameStateTimer.start();
     TTF_Font* font1 = TTF_OpenFont("assets/fonts/FVF Fernando 08.ttf", 24);
     SDL_Color white = {255, 255, 255, 255};
     mStartButton = new Texture(font1, "Bắt đầu", white);
@@ -17,14 +17,15 @@ MainMenu::MainMenu(Game* gameInstance) {
     mExitButton = new Texture(font1, "Thoát game", white);
     TTF_CloseFont(font1);
     mBackgroundTexture = new Texture("assets/img/main-menu-bg.png");
-    for (int i = 0; i < 10; ++i) mBackground.push_back(new Sprite(mBackgroundTexture, 0, 535 * i, 1024, 535));
+    for (int i = 0; i < 10; ++i) {
+
+        mBackground.push_back(Sprite(mBackgroundTexture, 0, 535 * i, 1024, 535));
+    }
     Locator::getMusicPlayer()->load("assets/bgm/calm_main_menu_theme.mp3");
     Locator::getMusicPlayer()->play();
     Locator::getMusicPlayer()->setInternalVolume(100);
-    mChooseSound = new SoundEffect("assets/se/choose.wav");
-    Locator::getSoundEffectPlayer()->loadSoundEffect(*mChooseSound);
-    mConfirmSound = new SoundEffect("assets/se/confirm.wav");
-    Locator::getSoundEffectPlayer()->loadSoundEffect(*mConfirmSound);
+    Locator::getSoundEffectPlayer()->loadSoundEffect("choose","assets/se/choose.wav");
+    Locator::getSoundEffectPlayer()->loadSoundEffect("confirm","assets/se/confirm.wav");
 }
 MainMenu::~MainMenu() {
     delete mBackgroundTexture;
@@ -32,30 +33,29 @@ MainMenu::~MainMenu() {
     delete mSettingsButton;
     delete mCreditsButton;
     delete mExitButton;
-    for (auto& elem : mBackground)
-        delete elem;
 }
 
 void MainMenu::handleEvents(SDL_Event* event) {
     while (SDL_PollEvent(event)) {
         if (event->type == SDL_QUIT)
             gCurrentGame->setState(GAME_EXIT);
-        else if (event->type == SDL_KEYDOWN && event->key.repeat == 0) {
+        else if ((event->type == SDL_KEYDOWN && event->key.repeat == 0) || event->type == SDL_CONTROLLERBUTTONDOWN) {
             SDL_Scancode& keyPressed = event->key.keysym.scancode;
-            if (keyPressed == SDL_SCANCODE_DOWN || keyPressed == gCurrentGame->mGameSettings.buttonDown) {
-                Locator::getSoundEffectPlayer()->play(mChooseSound->id, mChooseSound->id);
-                mChoosingOption = (mChoosingOption + 1) % 4;
-            } else if (keyPressed == SDL_SCANCODE_UP || keyPressed == gCurrentGame->mGameSettings.buttonUp) {
-                Locator::getSoundEffectPlayer()->play(mChooseSound->id, mChooseSound->id);
+            Uint8& controllerKeyPressed = event->cbutton.button;
+            if (keyPressed == SDL_SCANCODE_DOWN || keyPressed == gCurrentGame->mGameSettings.buttonDown || (event->type == SDL_CONTROLLERBUTTONDOWN && controllerKeyPressed == SDL_CONTROLLER_BUTTON_DPAD_DOWN)) {
+                Locator::getSoundEffectPlayer()->play("choose");
+                mChoosingOption = (mChoosingOption + 1) % NUM_OF_OPTIONS;
+            } else if (keyPressed == SDL_SCANCODE_UP || keyPressed == gCurrentGame->mGameSettings.buttonUp ||  (event->type == SDL_CONTROLLERBUTTONDOWN && controllerKeyPressed == SDL_CONTROLLER_BUTTON_DPAD_UP)) {
+                Locator::getSoundEffectPlayer()->play("choose");
                 if (mChoosingOption == 0)
-                    mChoosingOption = 3;
+                    mChoosingOption = NUM_OF_OPTIONS-1;
                 else
                     --mChoosingOption;
-            } else if (keyPressed == SDL_SCANCODE_RETURN || keyPressed == SDL_SCANCODE_SPACE || keyPressed == gCurrentGame->mGameSettings.buttonJump) {
-                Locator::getSoundEffectPlayer()->play(mConfirmSound->id, mChooseSound->id);
+            } else if (keyPressed == SDL_SCANCODE_RETURN || keyPressed == SDL_SCANCODE_SPACE || keyPressed == gCurrentGame->mGameSettings.buttonJump || (event->type == SDL_CONTROLLERBUTTONDOWN && (controllerKeyPressed == SDL_CONTROLLER_BUTTON_A || controllerKeyPressed == SDL_CONTROLLER_BUTTON_START))) {
+                Locator::getSoundEffectPlayer()->play("confirm");
                 switch(mChoosingOption) {
                     case 0:
-                    gCurrentGame->setState(STAGE_1);
+                    gCurrentGame->setState(CHARACTER_SELECTION);
                     break;
                     case 1:
 
@@ -73,11 +73,11 @@ void MainMenu::handleEvents(SDL_Event* event) {
 }
 
 void MainMenu::handleLogic(double) {
-    accumulator++;
+
 }
 
 void MainMenu::handleGraphics() {
-    Sprite* currentBG = mBackground[accumulator / 5 % 10];
+    Sprite* currentBG = &mBackground[mGameStateTimer.getTicks() / 100 % 10];
 
     // Reset transparency
     gRenderer->setTextureTransparency(mStartButton, 255);
@@ -99,9 +99,13 @@ void MainMenu::handleGraphics() {
         gRenderer->setTextureTransparency(mExitButton, 100);
         break;
     }
-    gRenderer->renderTexture(currentBG->getTexture(), 0, 0, 100, 100, currentBG->getClip(), PIN_LEFT, PIN_TOP, SIZE_IN_PERCENTAGE, SIZE_IN_PERCENTAGE);
-    gRenderer->renderTexture(mStartButton, 20, 165, -1, 70, nullptr, PIN_RIGHT, PIN_TOP);
-    gRenderer->renderTexture(mSettingsButton, 20, 245, -1, 70, nullptr, PIN_RIGHT, PIN_TOP);
-    gRenderer->renderTexture(mCreditsButton, 20, 325, -1, 70, nullptr, PIN_RIGHT, PIN_TOP);
-    gRenderer->renderTexture(mExitButton, 20, 400, -1, 70, nullptr, PIN_RIGHT, PIN_TOP);
+    gRenderer->renderTexture(currentBG->getTexture(), currentBG->getClip());
+    SDL_Rect pos1 = gRenderer->getAbsolutePosition(mStartButton, 20, 165, -1, 70, PIN_RIGHT, PIN_TOP);
+    gRenderer->renderTexture(mStartButton, nullptr, &pos1);
+    SDL_Rect pos2 = gRenderer->getAbsolutePosition(mSettingsButton, 20, 245, -1, 70, PIN_RIGHT, PIN_TOP);
+    gRenderer->renderTexture(mSettingsButton, nullptr, &pos2);
+    SDL_Rect pos3 = gRenderer->getAbsolutePosition(mCreditsButton, 20, 325, -1, 70, PIN_RIGHT, PIN_TOP);
+    gRenderer->renderTexture(mCreditsButton, nullptr, &pos3);
+    SDL_Rect pos4 = gRenderer->getAbsolutePosition(mExitButton, 20, 400, -1, 70, PIN_RIGHT, PIN_TOP);
+    gRenderer->renderTexture(mExitButton, nullptr, &pos4);
 }

@@ -4,8 +4,7 @@
 #include <string>
 #include <unordered_map>
 
-#include "SoundEffect.h"
-#include "ISoundEffectPlayer.h"
+
 #include "SoundEffectPlayer.h"
 
 SoundEffectPlayer::SoundEffectPlayer() {
@@ -18,19 +17,45 @@ void SoundEffectPlayer::setVolume(int volume) {
         mPlayerVolume = volume;
 }
 
-void SoundEffectPlayer::loadSoundEffect(SoundEffect& effect) {
-    Mix_Chunk* effectLoaded = Mix_LoadWAV(effect.path.c_str());
-    if (effectLoaded != nullptr) {
-        effectLoaded->volume = 128 * mPlayerVolume / 100; 
-        int chunkId = getUniqueChannelId();
-        storage[chunkId] = effectLoaded;
-        effect.id = chunkId;
-    } else
-        std::cout << "Error: Loading sound effect " << effect.path << " failed, Mix_LoadWAV: " << Mix_GetError() << "\n";
+void SoundEffectPlayer::loadSoundEffect(std::string name, std::string path) {
+    if(!storage.count(name)) {
+        Mix_Chunk* effectLoaded = Mix_LoadWAV(path.c_str());
+        if (effectLoaded != nullptr) {
+            Mix_VolumeChunk(effectLoaded, 128 * mPlayerVolume / 100); 
+            int chunkId = getUniqueChannelId();
+            storage.emplace(name, SoundEffect(effectLoaded, chunkId));
+        } else
+            std::cout << "Error: Loading sound effect " << path << " failed, Mix_LoadWAV: " << Mix_GetError() << "\n";
+    }
 }
-void SoundEffectPlayer::play(int id, int channel, int loops, int time) {
-    if (id != -1)
-        Mix_PlayChannelTimed(channel, storage[id], loops, time);
+void SoundEffectPlayer::play(std::string name, int loops, int time) {
+    if (storage.count(name))
+        if(Mix_PlayChannelTimed(storage[name].id, storage[name].chunk, loops, time)==-1) {
+                printf("Error: Mix_PlayChannel: %s\n",Mix_GetError());
+        }
+}
+
+void SoundEffectPlayer::free(std::string name) {
+    if(storage.count(name)) {
+        if(storage[name].chunk != nullptr)
+            Mix_FreeChunk(storage[name].chunk);
+        storage.erase(name);
+    }
+}
+
+void SoundEffectPlayer::free() {
+    for(auto& elem: storage) {
+        Mix_FreeChunk(elem.second.chunk);
+    }
+    storage.clear();
+}
+
+void SoundEffectPlayer::stop(int id) {
+    Mix_HaltChannel(id);
+}
+
+void SoundEffectPlayer::stop(std::string name) {
+    Mix_HaltChannel(storage[name].id);
 }
 
 int SoundEffectPlayer::getUniqueChannelId() {

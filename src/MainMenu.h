@@ -16,19 +16,16 @@ class MainMenu : public GameState {
     void handleLogic(double timeStep);
     void handleGraphics();
    private:
+    const int NUM_OF_OPTIONS = 4;
     IRenderer* gRenderer = Locator::getRenderer();
-    Texture* mSpriteSheet1;
     int mChoosingOption;
     Texture* mStartButton;
     Texture* mSettingsButton;
     Texture* mCreditsButton;
     Texture* mExitButton;
     Texture* mBackgroundTexture;
-    SoundEffect* mChooseSound;
-    SoundEffect* mConfirmSound;
-    std::vector<Sprite *> mBackground;
+    std::vector<Sprite> mBackground;
     Game* gCurrentGame;
-    int accumulator;
 };
 
 #endif

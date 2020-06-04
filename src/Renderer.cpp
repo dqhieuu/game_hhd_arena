@@ -4,6 +4,7 @@
 #include <SDL_image.h>
 
 #include <iostream>
+#include <memory>
 
 #include "IRenderer.h"
 #include "Texture.h"
@@ -27,26 +28,29 @@ void Renderer::clearScreen() {
     SDL_RenderClear(mRenderer);
 }
 
-void Renderer::renderTexture(Texture* texture, int x, int y, int width, int height, SDL_Rect* clip,
-                             PositioningMode xMode, PositioningMode yMode,
-                             SizeMode widthMode, SizeMode heightMode,
+void Renderer::renderTexture(Texture* texture, SDL_Rect* clip, SDL_Rect* dest,
                              SDL_RendererFlip flip, double angle, SDL_Point* center) {
     if (texture == nullptr) return;
-    SDL_Rect* textureSpecs = getAbsolutePosition(texture, x, y, width, height, xMode, yMode, widthMode, heightMode);
-    SDL_RenderCopyEx(mRenderer, texture->getTexture(), clip, textureSpecs, angle, center, flip);
-    delete textureSpecs;
+    SDL_RenderCopyEx(mRenderer, texture->getTexture(), clip, dest, angle, center, flip);
+    SDL_SetRenderDrawColor(mRenderer, 0, 255, 0, 255);
+    SDL_RenderDrawRect(mRenderer, dest);
 }
 
-SDL_Rect* Renderer::getAbsolutePosition(Texture* texture, int x, int y, int width, int height,
+void Renderer::renderRect(SDL_Rect* dest, Uint8 r, Uint8 g, Uint8 b, Uint8 a) {
+    SDL_SetRenderDrawColor(mRenderer, r,g,b,a);
+    SDL_RenderDrawRect(mRenderer, dest);
+}
+
+SDL_Rect Renderer::getAbsolutePosition(Texture* texture, int x, int y, int width, int height,
                                     PositioningMode xMode, PositioningMode yMode,
                                     SizeMode widthMode, SizeMode heightMode) {
-    if (width != -1) {
+    if (width >= 0) {
         if (widthMode == SIZE_IN_PERCENTAGE) {
             width = (mWindowWidth * width) / 100;
         }
     } else
         width = texture->getWidth();
-    if (height != -1) {
+    if (height >= 0) {
         if (heightMode == SIZE_IN_PERCENTAGE) {
             height = (mWindowHeight * height) / 100;
         }
@@ -62,8 +66,7 @@ SDL_Rect* Renderer::getAbsolutePosition(Texture* texture, int x, int y, int widt
     } else if (yMode == PIN_CENTER) {
         y = (mWindowHeight - height) / 2 + y;
     }
-    SDL_Rect* absolutePosition = new SDL_Rect{x, y, width, height};
-    return absolutePosition;
+    return SDL_Rect{x, y, width, height};
 }
 
 void Renderer::setTextureBlendMode(Texture* texture, SDL_BlendMode blending) {

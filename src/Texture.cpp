@@ -18,8 +18,8 @@ Texture::Texture(std::string path) {
     loadFromFile(path);
 }
 
-Texture::Texture(TTF_Font *font, std::string textureText, SDL_Color textColor) {
-    loadFromRenderedText(font, textureText, textColor);
+Texture::Texture(TTF_Font *font, std::string textureText, SDL_Color textColor, bool highQuality) {
+    loadFromRenderedText(font, textureText, textColor, highQuality);
 }
 
 Texture::~Texture() {
@@ -58,8 +58,11 @@ bool Texture::loadFromFile(std::string path) {
     return mTexture != NULL;
 }
 
-bool Texture::loadFromRenderedText(TTF_Font* font, std::string textureText, SDL_Color textColor) {
-    SDL_Surface* textSurface = TTF_RenderUTF8_Solid(font, textureText.c_str(), textColor);
+bool Texture::loadFromRenderedText(TTF_Font* font, std::string textureText, SDL_Color textColor, bool highQuality) {
+    SDL_Surface* textSurface;
+    if(highQuality) textSurface = TTF_RenderUTF8_Blended(font, textureText.c_str(), textColor);
+    else textSurface = TTF_RenderUTF8_Solid(font, textureText.c_str(), textColor);
+     
     if (textSurface == NULL) {
         printf("Unable to render text surface! SDL_ttf Error: %s\n", TTF_GetError());
     } else {

@@ -17,11 +17,11 @@ class Intro : public GameState {
    private:
     IRenderer* gRenderer = Locator::getRenderer();
     Texture* mSplashScreen;
-    SoundEffect* mIntroVoice;
     Game* gCurrentGame;
     int mAccumulator;
     int mSplashScreenOpacity;
     bool mIsFadingIn;
+    bool mHasPlayedVoice;
 };
 
 #endif

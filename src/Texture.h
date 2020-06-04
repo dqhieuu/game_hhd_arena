@@ -9,21 +9,16 @@ class Texture {
    public:
     Texture();
     Texture(std::string path);
-    Texture(TTF_Font *font, std::string textureText, SDL_Color textColor);
+    Texture(TTF_Font *font, std::string textureText, SDL_Color textColor, bool highQuality = false);
     ~Texture();
-    void free();
     int getWidth() { return mWidth; }
     int getHeight() { return mWidth; }
     SDL_Texture* getTexture() { return mTexture; }
-    bool loadFromRenderedText(TTF_Font *font, std::string text, SDL_Color textColor);
+    bool loadFromRenderedText(TTF_Font *font, std::string text, SDL_Color textColor, bool highQuality = false);
     bool loadFromFile(std::string path);
-    void attachCamera(SDL_Rect * camera) {
-        if(camera) mCamera = camera;
-    };
 
    private:
     SDL_Texture *mTexture;
-    SDL_Rect *mCamera = nullptr;
     bool isRendered;
 
    protected:

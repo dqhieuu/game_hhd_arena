@@ -52,6 +52,7 @@ int main(int /*argc*/, char** /*args*/) {
 
         //Get previous time step and reset step timer
         timeStep = stepTimer.getTicks() / 1000.0;
+        if(timeStep > 100) timeStep = 100;
         stepTimer.start();
 
         // Update the main game

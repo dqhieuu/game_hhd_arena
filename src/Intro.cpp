@@ -4,48 +4,46 @@
 #include "Renderer.h"
 
 Intro::Intro(Game* gameInstance) {
+    mGameStateTimer.start();
     mSplashScreenOpacity = 0;
-    mAccumulator = 0;
     gCurrentGame = gameInstance;
+    mHasPlayedVoice = false;
     mIsFadingIn = true;
     mSplashScreen = new Texture("assets/img/splashscreen.png");
-    mIntroVoice = new SoundEffect("assets/se/introvoice.wav");
-    Locator::getSoundEffectPlayer()->loadSoundEffect(*mIntroVoice);
-    if(gCurrentGame->mGameSettings.isFullScreen) mAccumulator-=150;
+    Locator::getSoundEffectPlayer()->loadSoundEffect("introvoice","assets/se/introvoice.wav");
 }
 
 Intro::~Intro() {
     delete mSplashScreen;
-    delete mIntroVoice;
 }
 
 void Intro::handleEvents(SDL_Event* event) {
     while (SDL_PollEvent(event)) {
         if (event->type == SDL_QUIT)
             gCurrentGame->setState(GAME_EXIT);
-        else if (event->type == SDL_KEYDOWN && event->key.repeat == 0) {
+        else if ((event->type == SDL_KEYDOWN && event->key.repeat == 0) || event->type == SDL_CONTROLLERBUTTONDOWN) {
             gCurrentGame->setState(MAIN_MENU);
         }
     }
 }
 
 void Intro::handleLogic(double) {
-    mAccumulator++;
-    if(mAccumulator == 20) Locator::getSoundEffectPlayer()->play(mIntroVoice->id, mIntroVoice->id);
-    if(mAccumulator >= 0) {
-        if (mIsFadingIn) {
-            mSplashScreenOpacity += 5;
-            if (mSplashScreenOpacity >= 255) {
-                mSplashScreenOpacity = 255;
-                mIsFadingIn = false;
-            }
-        } else {
-            if (mAccumulator >= 180) {
-                mSplashScreenOpacity -= 12;
-                if (mSplashScreenOpacity <= 0) {
-                    mSplashScreenOpacity = 0;
-                    gCurrentGame->setState(MAIN_MENU);
-                }
+    if(!mHasPlayedVoice && mGameStateTimer.getTicks()>=200) {
+        Locator::getSoundEffectPlayer()->play("introvoice");
+        mHasPlayedVoice = true;
+    }
+    if (mIsFadingIn) {
+        mSplashScreenOpacity = mGameStateTimer.getTicks()/4;
+        if (mSplashScreenOpacity >= 255) {
+            mSplashScreenOpacity = 255;
+            mIsFadingIn = false;
+        }
+    } else {
+        if (mGameStateTimer.getTicks() >= 2000) {
+            mSplashScreenOpacity = 255 - (mGameStateTimer.getTicks() - 2000)/4;
+            if (mSplashScreenOpacity <= 0) {
+                mSplashScreenOpacity = 0;
+                gCurrentGame->setState(MAIN_MENU);
             }
         }
     }
@@ -54,5 +52,5 @@ void Intro::handleLogic(double) {
 void Intro::handleGraphics() {
     // Reset transparency
     gRenderer->setTextureTransparency(mSplashScreen, mSplashScreenOpacity);
-    gRenderer->renderTexture(mSplashScreen, 0, 0, 100, 100, nullptr, PIN_LEFT, PIN_TOP, SIZE_IN_PERCENTAGE, SIZE_IN_PERCENTAGE);
+    gRenderer->renderTexture(mSplashScreen);
 }

@@ -1,4 +1,4 @@
-set INPUT= .\src\utils.cpp .\src\SoundEffect.cpp .\src\SoundEffectPlayer.cpp .\src\MusicPlayer.cpp .\src\Renderer.cpp .\src\Locator.cpp .\src\Timer.cpp .\src\Texture.cpp .\src\Sprite.cpp .\src\JumpingState.cpp .\src\StandingState.cpp .\src\Character.cpp .\src\Game.cpp .\src\Intro.cpp .\src\MainMenu.cpp .\src\Stage1.cpp .\src\main.cpp
+set INPUT= .\src\Vector2D.cpp   .\src\utils.cpp   .\src\SoundEffect.cpp   .\src\SoundEffectPlayer.cpp   .\src\MusicPlayer.cpp   .\src\Renderer.cpp   .\src\Locator.cpp   .\src\Timer.cpp   .\src\Texture.cpp   .\src\Sprite.cpp   .\src\JumpingState.cpp   .\src\StandingState.cpp   .\src\WallSlidingState.cpp   .\src\DoNothingState.cpp   .\src\RangedAttackingState.cpp   .\src\MeleeAttackingState.cpp   .\src\Bullet.cpp   .\src\Character.cpp   .\src\Game.cpp   .\src\Intro.cpp   .\src\MainMenu.cpp   .\src\CharacterSelectionScreen.cpp   .\src\Stage1.cpp   .\src\main.cpp 
 set OUTPUT=.\bin\release\HHD_Arena.exe .\src\meta\my.res
 set COMPILER_FLAGS=-std=c++11
 set LINKER_FLAGS=-lmingw32 -lSDL2main -lSDL2 -lSDL2_image -lSDL2_mixer -lSDL2_ttf

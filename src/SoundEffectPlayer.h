@@ -5,19 +5,24 @@
 #include <SDL_mixer.h>
 #include <unordered_map>
 #include "ISoundEffectPlayer.h"
+#include "SoundEffect.h"
+#include "string"
 
 class SoundEffectPlayer : public ISoundEffectPlayer {
    public:
     SoundEffectPlayer();
     virtual void setVolume(int volume);
-    virtual void loadSoundEffect(SoundEffect& effect);
-    virtual void play(int id, int channel = -1, int loops = 0, int time = -1);
-
+    virtual void loadSoundEffect(std::string name, std::string path);
+    virtual void play(std::string name, int loops = 0, int time = -1);
+    virtual void stop(int channel = -1);
+    virtual void stop(std::string name);
+    virtual void free(std::string name);
+    virtual void free();
    private:
     int getUniqueChannelId();
     int mPlayerVolume;
     int mChannelIndex;
-    std::unordered_map<int, Mix_Chunk*> storage;
+    std::unordered_map<std::string, SoundEffect> storage;
 };
 
 #endif
