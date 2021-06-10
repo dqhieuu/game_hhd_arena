@@ -33,12 +33,12 @@ void Renderer::renderTexture(Texture* texture, SDL_Rect* clip, SDL_Rect* dest,
     if (texture == nullptr) return;
     SDL_RenderCopyEx(mRenderer, texture->getTexture(), clip, dest, angle, center, flip);
     SDL_SetRenderDrawColor(mRenderer, 0, 255, 0, 255);
-    SDL_RenderDrawRect(mRenderer, dest);
+  //  SDL_RenderDrawRect(mRenderer, dest);
 }
 
 void Renderer::renderRect(SDL_Rect* dest, Uint8 r, Uint8 g, Uint8 b, Uint8 a) {
     SDL_SetRenderDrawColor(mRenderer, r,g,b,a);
-    SDL_RenderDrawRect(mRenderer, dest);
+  //  SDL_RenderDrawRect(mRenderer, dest);
 }
 
 SDL_Rect Renderer::getAbsolutePosition(Texture* texture, int x, int y, int width, int height,

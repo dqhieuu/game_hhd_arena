@@ -96,11 +96,11 @@ void StageResult::handleGraphics() {
     }
 
     if (currentTick >= 1000) {
-        SDL_Rect posScoreLabel = gRenderer->getAbsolutePosition(&mScoreLabel, 500, -50, -1, 65, PIN_LEFT, PIN_CENTER);
+        SDL_Rect posScoreLabel = gRenderer->getAbsolutePosition(&mScoreLabel, 500, -70, -1, 65, PIN_LEFT, PIN_CENTER);
         gRenderer->renderTexture(&mScoreLabel, nullptr, &posScoreLabel);
 
         Texture scoreText(mFont2, std::to_string(mRenderScore), crimson, true);
-        SDL_Rect posScoreText = gRenderer->getAbsolutePosition(&scoreText, 600, -55, -1, 75, PIN_LEFT, PIN_CENTER);
+        SDL_Rect posScoreText = gRenderer->getAbsolutePosition(&scoreText, 600, -75, -1, 75, PIN_LEFT, PIN_CENTER);
         gRenderer->renderTexture(&scoreText, nullptr, &posScoreText);
     }
     if (currentTick >= 3500) {

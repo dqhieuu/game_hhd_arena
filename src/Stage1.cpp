@@ -39,6 +39,8 @@ Stage1::Stage1(Game* gameInstance, int stageWidth, int stageHeight, std::string 
     pos2 = gRenderer->getAbsolutePosition(mSolidPlatform->getTexture(), 0, 0, 2, 100, PIN_RIGHT, PIN_TOP, SIZE_IN_PERCENTAGE, SIZE_IN_PERCENTAGE);
     pos3 = gRenderer->getAbsolutePosition(mSolidPlatform->getTexture(), 0, 0, 100, 5, PIN_LEFT, PIN_TOP, SIZE_IN_PERCENTAGE, SIZE_IN_PERCENTAGE);
     pos4 = gRenderer->getAbsolutePosition(mSolidPlatform->getTexture(), 0, 0, 100, 12, PIN_LEFT, PIN_BOTTOM, SIZE_IN_PERCENTAGE, SIZE_IN_PERCENTAGE);
+    pos5 = gRenderer->getAbsolutePosition(mSolidPlatform->getTexture(), 200, 300, 11, 8, PIN_LEFT, PIN_TOP, SIZE_IN_PERCENTAGE, SIZE_IN_PERCENTAGE);
+    pos6 = gRenderer->getAbsolutePosition(mSolidPlatform->getTexture(), 200, 300, 11, 8, PIN_RIGHT, PIN_TOP, SIZE_IN_PERCENTAGE, SIZE_IN_PERCENTAGE);
     mBulletSprite = new Sprite(&mSheet, 99, 34, 94, 34, false);
     mBulletSprite->addProportionalHitbox(0.25, 0.25, 0.5, 0.5);
     Locator::getMusicPlayer()->load("assets/bgm/stage1-bg.mp3");
@@ -154,6 +156,8 @@ void Stage1::handleLogic(double timeStep) {
         mSolidObjects.emplace_back(pos2);
         mSolidObjects.emplace_back(pos3);
         mSolidObjects.emplace_back(pos4);
+        mSolidObjects.emplace_back(pos5);
+        mSolidObjects.emplace_back(pos6);
         mPlayer->handleLogic(&mSolidObjects, timeStep);
         mBoss->handleLogic(&mSolidObjects,timeStep);
         mSolidObjects.clear();
@@ -186,8 +190,9 @@ void Stage1::handleGraphics() {
     gRenderer->setTextureColor(mWideLight1.getTexture(), 237, 52, 135);
 //    gRenderer->renderTexture(mSolidPlatform->getTexture(), mSolidPlatform->getClip(), &pos2);
 //    gRenderer->renderTexture(mSolidPlatform->getTexture(), mSolidPlatform->getClip(), &pos3);
- //   gRenderer->renderTexture(mSolidPlatform->getTexture(), mSolidPlatform->getClip(), &pos4);
-
+//    gRenderer->renderTexture(mSolidPlatform->getTexture(), mSolidPlatform->getClip(), &pos4);
+    gRenderer->renderTexture(mSolidPlatform->getTexture(), mSolidPlatform->getClip(), &pos5);
+    gRenderer->renderTexture(mSolidPlatform->getTexture(), mSolidPlatform->getClip(), &pos6);
     for(auto & bullet:mEnemyBullets) {
         bullet->handleGraphics();
     }
